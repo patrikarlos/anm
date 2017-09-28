@@ -22,9 +22,9 @@ if pidof -x "snmpd" >/dev/null; then
     exit 1
 fi
 
-lh=$(cat snmpd.conf  | grep agentAddress | grep  localhost)
-lip=$(cat snmpd.conf  | grep agentAddress | grep  127.0.0.1)
-lprotport=$(cat snmpd.conf  | grep agentAddress | grep  udp:161)
+lh=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  localhost)
+lip=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  127.0.0.1)
+lprotport=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  udp:161)
 
 if [[ ! -z "$lh" ]]; then
     echo "[SNMPd] Will only answer on localhost;ERROR"
@@ -60,7 +60,7 @@ fi
 noIfs=$(( ( RANDOM % 10 )  + 5 ))
 myif=1
 echo "Creating counters.conf, with $noIfs random interfaces. "
-rm /tmp/A1/counters.conf
+rm -f /tmp/A1/counters.conf
 while [ $myif -lt "$noIfs" ]; do
     rate=$[ ( $RANDOM * 3000 ) ]
     echo "$myif,$rate" >> /tmp/A1/counters.conf
@@ -76,7 +76,7 @@ echo "Done"
 
 
 # ##Start SNMPd, and log the output to file.
-sudo snmpd -f -c snmpd.conf -C -a -Lf /tmp/A1/snmpd.log &
+sudo snmpd -f -c /tmp/A1/snmpd.conf -C -a -Lf /tmp/A1/snmpd.log &
 
 
 
@@ -135,24 +135,24 @@ fi
 echo "Checking the LAST OID , disjunct and large"
 
 ##Check rate for last OID
-rm rateCheck_samples.log
+rm -f /tmp/A1/rateCheck_samples.log
 for k in {1..10}; do 
-    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$lastOid >> rateCheck_samples.log
+    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$lastOid >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print $1-p} {p=$1}' rateCheck_samples.log > rates.log
+awk 'NR>1{print $1-p} {p=$1}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
-negrate=$(grep '-' rates.log)
+negrate=$(grep '-' /tmp/A1/rates.log)
 if [[ "$negrate" ]]; then
     echo "Found negative rate, wrapp occured"
 fi
 
 
 ## Get statistics
-read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' rates.log )
+read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A1/rates.log )
 
 
 ## Get counter rate
@@ -180,7 +180,7 @@ else
 fi
 
 
-noIfs=$(cat counters.conf | wc -l | awk '{print $1-2}')
+noIfs=$(cat /tmp/A1/counters.conf | wc -l | awk '{print $1-2}')
 
 echo "We have a range 0 to $noIfs "
 chkIF=$(( ( RANDOM % $noIfs )  + 1 ))
@@ -192,14 +192,14 @@ echo "Will check $chkIF with $OidC";
 let chkOID=chkIF+1
 
 
-rm rateCheck_samples.log
+rm -f /tmp/A1/rateCheck_samples.log
 for k in {1..10}; do 
-    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$chkOID >> rateCheck_samples.log
+    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$chkOID >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print $1-p} {p=$1}' rateCheck_samples.log > rates.log
+awk 'NR>1{print $1-p} {p=$1}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
 negrate=$(grep '-' rates.log)
@@ -209,7 +209,7 @@ fi
 
 
 ## Get statistics
-read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' rates.log )
+read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A1/rates.log )
 
 
 
@@ -242,8 +242,15 @@ fi
 echo "----------------------"
 echo "If you gotten this far, and there are no ERRORS or issues mentioned above, its probably ok."
 echo "----------------------"
+
 sudo killall snmpd
 abortWdem
+
+##CLEAN UP FILES
+rm -f /tmp/A1/counters.conf
+rm -f /tmp/A1/rateCheck_samples.log
+rm -f /tmp/A1/rates.log
+rm -f /tmp/A1/snmpd.log
 
 
 
