@@ -136,21 +136,19 @@ echo "Checking the LAST OID , disjunct and large"
 
 ##Check rate for last OID
 rm -f /tmp/A1/rateCheck_samples.log
-for k in {1..10}; do 
+for k in {1..20}; do 
     snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.$lastOid | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print $1-p} {p=$1}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
+awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A1/rates.log)
 if [[ "$negrate" ]]; then
     echo "Found negative rate, wrapp occured"
 fi
-
-exit
 
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A1/rates.log )
@@ -194,16 +192,16 @@ let chkOID=chkIF+1
 
 
 rm -f /tmp/A1/rateCheck_samples.log
-for k in {1..10}; do 
-    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$chkOID >> /tmp/A1/rateCheck_samples.log
+for k in {1..20}; do 
+    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.$chkOID | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print $1-p} {p=$1}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
+awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
-negrate=$(grep '-' rates.log)
+negrate=$(grep '-' /tmp/A1/rates.log)
 if [[ "$negrate" ]]; then
     echo "Found negative rate, wrapp occured"
 fi
@@ -246,7 +244,7 @@ echo "----------------------"
 
 sudo killall snmpd
 abortWdem
-
+ 
 ##CLEAN UP FILES
 rm -f /tmp/A1/counters.conf
 rm -f /tmp/A1/rateCheck_samples.log
