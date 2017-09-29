@@ -137,7 +137,7 @@ echo "Checking the LAST OID , disjunct and large"
 ##Check rate for last OID
 rm -f /tmp/A1/rateCheck_samples.log
 for k in {1..10}; do 
-    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$lastOid >> /tmp/A1/rateCheck_samples.log
+    snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.$lastOid | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
@@ -150,6 +150,7 @@ if [[ "$negrate" ]]; then
     echo "Found negative rate, wrapp occured"
 fi
 
+exit
 
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A1/rates.log )
