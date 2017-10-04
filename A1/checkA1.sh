@@ -22,6 +22,28 @@ if pidof -x "snmpd" >/dev/null; then
     exit 1
 fi
 
+if [ ! -e /tmp/A1/snmpd.conf ]; then
+    echo "Error: Cant find /tm/A1/snmpd.conf";
+    echo "Folder contains:"
+    ls /tmp/A1
+    echo "        Leaving."
+    exit 1
+fi
+
+if [ ! -e /tmp/A1/subagent ]; then
+    echo "Error: Cant find /tm/A1/subagent";
+    echo "Folder contains:"
+    ls /tmp/A1
+    echo "        Leaving."
+    exit 1
+fi
+
+
+
+
+    
+
+
 lh=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  localhost)
 lip=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  127.0.0.1)
 lprotport=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  udp:161)
@@ -45,6 +67,15 @@ if [[ $(grep "\/tmp/\A1\/" /tmp/A1/snmpd.conf) ]]; then
      echo "[SNMPd] Path was found in config file";
 else
     echo "[SNMPd] MISSING PATH will not work";
+    exit 1
+fi
+
+if [[ $(grep '/tmp/A1/subagent["\$]' /tmp/A1/snmpd.conf) ]]; then
+     echo "[SNMPd] subagent call was found in config file";
+else
+    echo "[SNMPd] MISSING call to subagent (wo. extention), will not work";
+    echo "Found"
+    grep '/tmp/A1/subagent' /tmp/A1/snmpd.conf
     exit 1
 fi
 
