@@ -13,12 +13,14 @@ else
 fi
 }
 
-sha=$($Id$)
+version='2017-10-06 16:10:27 +0200 Patrik Arlos 4f809ab30cc1dee6d48c858ff04852337322ebe2'
 
 echo "...................................."
 echo $(date) . "Starting the evaluation of A1."
 echo "...................................."
-
+echo "This is version"
+echo "$version"
+echo " "
 
 if pidof -x "snmpd" >/dev/null; then
     echo "[SNMPd] Allready running"
