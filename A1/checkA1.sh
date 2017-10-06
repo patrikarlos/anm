@@ -1,6 +1,8 @@
 #!/bin/bash
+# Test for A1 for ET2536
 
 ##Check snmpd.config
+
 
 abortWdem() {
 demDied=$(cat /tmp/A1/snmpd.log | grep 'Received TERM or STOP signal...  shutting down')
@@ -11,10 +13,12 @@ else
 fi
 }
 
+sha=$($Id$)
 
 echo "...................................."
 echo $(date) . "Starting the evaluation of A1."
 echo "...................................."
+
 
 if pidof -x "snmpd" >/dev/null; then
     echo "[SNMPd] Allready running"
@@ -37,12 +41,6 @@ if [ ! -e /tmp/A1/subagent ]; then
     echo "        Leaving."
     exit 1
 fi
-
-
-
-
-    
-
 
 lh=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  localhost)
 lip=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  127.0.0.1)
@@ -73,10 +71,15 @@ fi
 if [[ $(grep '/tmp/A1/subagent["\$]' /tmp/A1/snmpd.conf) ]]; then
      echo "[SNMPd] subagent call was found in config file";
 else
-    echo "[SNMPd] MISSING call to subagent (wo. extention), will not work";
-    echo "Found"
-    grep '/tmp/A1/subagent' /tmp/A1/snmpd.conf
-    exit 1
+    if [[ $(grep "/tmp/A1/subagent['\$]" /tmp/A1/snmpd.conf) ]]; then
+	echo "[SNMPd] subagent call was found in config file";
+    else
+	
+	echo "[SNMPd] MISSING call to subagent (wo. extention), will not work";
+	echo "Found"
+	grep '/tmp/A1/subagent' /tmp/A1/snmpd.conf
+	exit 1
+    fi
 fi
 
 
@@ -90,7 +93,7 @@ fi
 
 noIfs=$(( ( RANDOM % 10 )  + 5 ))
 myif=1
-echo "Creating counters.conf, with $noIfs random interfaces. "
+echo -n "       Creating counters.conf, with $noIfs random interfaces. "
 rm -f /tmp/A1/counters.conf
 while [ $myif -lt "$noIfs" ]; do
     rate=$[ ( $RANDOM * 3000 ) ]
@@ -129,7 +132,9 @@ elif [ "$diff" -lt "-2" ]; then
     abortWdem
     exit 1
 else 
-    echo "[SNMPd] hopefully within bounds, t0= $myTime, t1=$snmpTime  --> $diff"
+    echo "[ TEST ] Checked difference between SNMPd and host."
+    echo "         Host time = $myTime, SNMPd time=$snmpTime "
+    echo "         Difference = $diff [s]"
 fi
 
 
@@ -148,7 +153,7 @@ if [[ -z "respOK" ]]; then
     abortWdem
     exit 1
 else 
-    echo "[SNMP] Got a response on the last valid OID"
+    echo "[ TEST ] SNMPd responded on the last valid OID"
 fi
 
 respNOK=$(snmpget -Onvq -v1 -c public localhost 1.3.6.1.4.1.4171.40.$lastOidP 2> /dev/null)
@@ -160,10 +165,10 @@ if [[ -z "respNOK" ]]; then
     abortWdem
     exit 1
 else 
-    echo "[SNMP] Seems to handle invalid OIDs"
+    echo "[ TEST ] SNMPd hanled a request to an invalid OID."
 fi
 
-echo "Checking the LAST OID , disjunct and large"
+echo "[ TEST ] Checking the LAST OID , disjunct and large"
 
 ##Check rate for last OID
 rm -f /tmp/A1/rateCheck_samples.log
@@ -178,7 +183,7 @@ awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A1/rates.log)
 if [[ "$negrate" ]]; then
-    echo "Found negative rate, wrapp occured"
+    echo "         Found negative rate, wrapp occured"
 fi
 
 ## Get statistics
@@ -188,38 +193,39 @@ read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i]
 ## Get counter rate
 lastC=$(tail -1 /tmp/A1/counters.conf | awk -F',' '{print $2}')
 pm=$(printf '\xF1')
-echo "Capacity: $lastC -- $mvalue std.dev= $stdval based on  $samples ($negs negative samples rejected)"
+echo "         Capacity: $lastC -- $mvalue std.dev= $stdval based on  $samples ($negs negative samples rejected)"
 
 if [ "$lastC" -ne "$mvalue" ]; then 
-    echo "[SNMP] The calulated rate is not equal to the configured."
-    echo "       Configured $lastC "
-    echo "       Returned   $mvalue"
+    echo "[ TEST ] The calulated rate is not equal to the configured."
+    echo "         Configured $lastC "
+    echo "         Returned   $mvalue"
     abortWdem
     exit 1
 else
-    echo "[SNMP] The returned rate matches configure (average)"
+    echo "[ TEST ] The returned rate matches the configured (average)"
 fi
 
 if [ "$stdval" -ne "0" ]; then
-    echo "[SNMP] The standard deviation is not zero, so there is variability"
-    echo "       in the rates, there should not be. "
+    echo "[ TEST ] The standard deviation is not zero, so there is variability"
+    echo "         in the rates, there should not be. "
     abortWdem
     exit 1
 else
-    echo "[SNMP] The rate does not vary"
+    echo "[ TEST ] The rate does not vary (std.dev). "
 fi
 
 
 noIfs=$(cat /tmp/A1/counters.conf | wc -l | awk '{print $1-2}')
 
-echo "We have a range 0 to $noIfs "
+#echo "         We have a range 0 to $noIfs "
 chkIF=$(( ( RANDOM % $noIfs )  + 1 ))
 
 ## Get counter rate
 OidC=$(grep "^$chkIF," /tmp/A1/counters.conf | awk -F',' '{print $2}')
 
-echo "Will check $chkIF with $OidC";
+
 let chkOID=chkIF+1
+echo "         Randomly picked to check $chkIF with $OidC";
 
 
 rm -f /tmp/A1/rateCheck_samples.log
@@ -234,7 +240,7 @@ awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A1/rates.log)
 if [[ "$negrate" ]]; then
-    echo "Found negative rate, wrapp occured"
+    echo "        Found negative rate, wrapp occured"
 fi
 
 
@@ -247,22 +253,22 @@ read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i]
 echo "Capacity: $OidC -- $mvalue std.dev= $stdval based on  $samples ($negs negative samples rejected)"
 
 if [ "$OidC" -ne "$mvalue" ]; then 
-    echo "[SNMP] The calulated rate is not equal to the configured."
-    echo "       Configured $OidC "
-    echo "       Returned   $mvalue"
+    echo "[ TEST ] The calulated rate is not equal to the configured."
+    echo "         Configured $OidC "
+    echo "         Returned   $mvalue"
     abortWdem
     exit 1
 else
-    echo "[SNMP] The returned rate matches configure (average)"
+    echo "[ TEST ] The returned rate matches configure (average)"
 fi
 
 if [ "$stdval" -ne "0" ]; then
-    echo "[SNMP] The standard deviation is not zero, so there is variability"
-    echo "       in the rates, there should not be. "
+    echo "[ TEST ] The standard deviation is not zero, so there is variability"
+    echo "         in the rates, there should not be. "
     abortWdem
     exit 1
 else
-    echo "[SNMP] The rate does not vary"
+    echo "[ TEST ] The rate does not vary (std.dev). "
 fi
 
 
