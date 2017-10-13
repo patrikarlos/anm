@@ -177,7 +177,7 @@ fi
 
 echo "Checking SNMP requests, against not so nice device (delay)"
 ## Get snmp requests
-sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob &
+sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay &
 echo "tcpdump on"
 sleep 3
 
@@ -185,7 +185,7 @@ sleep 3
 
 echo "Requests sent, logged, now validating" 
 
-read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob | awk -F':' 'NR>1{print $3}' | awk '{sum+=$1;sumsq+=($1)^2;n++;} END {printf "%f %f %d\n",sum/n, sqrt((sumsq-sum^2/(n))/(n)),n} ' )
+read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob_delay | awk -F':' 'NR>1{print $3}' | awk '{sum+=$1;sumsq+=($1)^2;n++;} END {printf "%f %f %d\n",sum/n, sqrt((sumsq-sum^2/(n))/(n)),n} ' )
 
 echo "Mean: $avg Stddev: $stdev N: $samps"
 stdCheck=$(echo $stdev'<0.1'|bc -l)
