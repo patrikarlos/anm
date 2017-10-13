@@ -41,6 +41,9 @@ ooid=$(( chkIF + 1));
 
 
 echo "Will collect $credential_dev1  $Ns at $Fs Hz, from $ooid ($chkIF) "
+echo "Running:"
+echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/data "
+
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/data
 
 rateCnt=$(cat /tmp/A2/data | wc -l)
