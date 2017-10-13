@@ -12,7 +12,14 @@ credential_dev1="$refdevice1:1611:public"
 credential_dev2="$refdevice2:161:public"
 
 
+version='2017-10-10 11:44:03 +0200 Patrik Arlos 6709cc8ce620e924d85bf8fd52c192597e1f0bf3'
 
+echo "...................................."
+echo $(date) . "Starting the evaluation of A2."
+echo "...................................."
+echo "This is version"
+echo "$version"
+echo " "
 
 echo "Checking Correct sample count"
 echo "Working with this;"
@@ -37,7 +44,7 @@ echo "Will collect $credential_dev1  $Ns at $Fs Hz, from $ooid ($chkIF) "
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/data
 
 rateCnt=$(cat /tmp/A2/data | wc -l)
-sampleCnt="$((rateCnt + 1))"
+sampleCnt="$((rateCnt))"
 
 if [ "$Ns" -ne "$sampleCnt" ]; then 
     echo "Error: Requested $Ns samples; got $sampleCnt". 

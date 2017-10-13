@@ -13,7 +13,8 @@ else
 fi
 }
 
-version='2017-10-06 16:10:27 +0200 Patrik Arlos 4f809ab30cc1dee6d48c858ff04852337322ebe2'
+version='2017-10-10 11:44:03 +0200 Patrik Arlos 6709cc8ce620e924d85bf8fd52c192597e1f0bf3'
+
 
 echo "...................................."
 echo $(date) . "Starting the evaluation of A1."
