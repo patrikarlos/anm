@@ -99,7 +99,11 @@ fi
 
 
 printf "Checking: data rate (high) "
+printf "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data" 
+
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data
+
+echo "Got " $(wc -l /tmp/A2/data) " samples "
 
 awk '{print $3}' /tmp/A2/data > /tmp/A2/rates.log
 

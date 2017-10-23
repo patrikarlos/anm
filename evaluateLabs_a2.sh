@@ -26,15 +26,22 @@ do
     rm -rf /tmp/A2/*
     echo "[EvalLab] /tmp/A2/"
     ls /tmp/A2/
-    echo "[EvalLab] Copying; cp -r $student/* /tmp/A2"
-    cp -r "$student"/* /tmp/A2
+    echo "[EvalLab] Copying; cp -r $myRootDir/$student/* /tmp/A2"
+    cp -rv "$myRootDir/$student"/* /tmp/A2
     cd /tmp/A2
 
+    echo "[EvalLab] content of /tmp/A2"
     ls
 
     ## Remove txt||pdf from filename
     rename 's/\.txt$//' *.txt
-    echo "[EvalLab] Executing test" 
+    chmod a+x /tmp/A2/prober
+    dos2unix /tmp/A2/prober
+    echo "[EvalLab] content of /tmp/A2"
+    ls -la 
+    echo "[EvalLab] Executing test"
+
+    
     $myBasedir/A2/checkA2.sh
     ls
     echo "[EvalLab] Removing /tmp/A2 folder. "

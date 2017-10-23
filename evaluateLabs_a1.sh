@@ -34,12 +34,16 @@ do
 
     ## Remove txt||pdf from filename
     rename 's/\.txt$//' *.txt
-    echo "[EvalLab] Executing test" 
+    echo "********************START: $student****************"
+    echo $(date) 
+    echo "********************************************"
+    echo "[EvalLab] Executing test for " 
+
     $myBasedir/A1/checkA1.sh
     ls
     echo "[EvalLab] Removing /tmp/A1 folder. "
     rm -rf /tmp/A1/*
-    echo "********************DELIMITER****************"
+    echo "********************END: $student****************"
     echo "[EvalLab] Killing snmpd"
     sudo killall snmpd
 done
