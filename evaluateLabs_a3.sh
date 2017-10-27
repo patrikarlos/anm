@@ -26,7 +26,7 @@ do
     echo "$studTmp" >> $myBasedir/myFolders
     echo "[EvalLab] $student data will be in $studTmp"
     echo "[EvalLab] Copying; cp -r $student/* $studTmp"
-    cp -r $student/* "$studTmp/"
+    cp -r "$student"/* "$studTmp/"
     ls $studTmp
 
     ## Remove txt||pdf from filename

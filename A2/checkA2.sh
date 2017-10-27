@@ -23,10 +23,10 @@ echo " "
 
 echo "Checking Correct sample count"
 echo "Working with this;"
-printf "\t $refdevice1 \n";
-printf "\t $refdevice2 \n";
-printf "\t $credential_dev1 \n";
-printf "\t $credential_dev2 \n";
+printf "\t refdevice1 $refdevice1 \n";
+printf "\t refdevice2 $refdevice2 \n";
+printf "\t credref1   $credential_dev1 \n";
+printf "\t credref2   $credential_dev2 \n";
 
 
 
@@ -51,12 +51,15 @@ sampleCnt="$((rateCnt))"
 
 if [ "$Ns" -ne "$sampleCnt" ]; then 
     echo "Error: Requested $Ns samples; got $sampleCnt". 
+    echo "/tmp/A2/data"
+    cat /tmp/A2/data
     exit 1
 else 
     echo " Got $Ns samples."
 fi
 
-printf "Checking: Sample rate => "
+echo " "
+echo "Checking: Sample rate => "
 
 
 ## Get the rate between samples
@@ -65,17 +68,18 @@ awk 'NR>1{print $1-p} {p=$1}' /tmp/A2/data > /tmp/A2/Trates.log
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/Trates.log )
 
-printf "Time: $mvalue +-$stdval from $samples samples. "
+echo "Time: $mvalue +-$stdval from $samples samples. "
 
 if [ "$mvalue" -ne "$Fs" ]; then 
-    echo "Error: Requested $Fs got $mvalue Hz"
+    echo "Error: Requested $Fs got $mvalue bps"
     exit 1
 else 
     echo "OK; Sample rate seems reasonable."
 fi
 
 ## Get the rate between samples
-printf "Checking data rate (random) " 
+echo " "
+echo "Checking data rate (random) " 
 awk '{print $3}' /tmp/A2/data > /tmp/A2/rates.log
 
 
@@ -88,18 +92,52 @@ OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/rates.log )
 
-printf "Rates: $mvalue +-$stdval from $samples"
+echo "Rates: $mvalue +-$stdval from $samples"
 
 if [ "$mvalue" -ne "$OidC" ]; then 
-    echo "Error: Requested $OidC got $mvalue Hz"
+    echo "Error: Requested $OidC got $mvalue du/tu"
+    echo "this is your data."
+    head /tmp/A2/data
     exit 1
 else
     echo "Ok, rate 1."
 fi
 
+echo " "
+echo "Checking that we can atleast manage 2Hz"
+echo "Running; /tmp/A2/prober $credential_dev1 2 20 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/fastprobe "
 
-printf "Checking: data rate (high) "
-printf "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data" 
+startTime=$(date +%s)
+/tmp/A2/prober $credential_dev1 2 20 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/fastprobe
+endTime=$(date +%s)
+
+duration=$((endTime-startTime))
+echo "That should have taken (approx) 10s. It took, $endTime-$starTime = $duration s. "
+
+if [[ "$duration" -lt 9 ]]; then
+    echo "Error: To send 20 requests at 2Hz should have taken arround 10s, you did it in $duration s". 
+    echo "Here is a log of your output"
+    head /tmp/A2/fastprobe
+    exit 1
+else
+    echo "OK"
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+echo " "
+echo "Checking: data rate (high) "
+echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data" 
 
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data
 
@@ -121,7 +159,7 @@ fi
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/rates.log )
 
-printf "Rates: $mvalue +-$stdval from $samples vs $OidC "
+echo "Rates: $mvalue +-$stdval from $samples vs $OidC "
 
 if [ "$mvalue" -ne "$OidC" ]; then 
     echo "Error: Requested $OidC got $mvalue Hz"
@@ -130,13 +168,14 @@ else
     echo "Ok, rate high"
 fi
 
-
-printf "Checking:  Requests, against a -REAL- device. "
+echo ""
+echo "Checking:  Requests, against a -REAL- device. "
 ## Get snmp requests
 sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob &
 echo "tcpdump on"
 sleep 3
 
+echo "Running /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3" 
 /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3
 
 printf "Requests sent, logged, validating\n" 
@@ -181,16 +220,37 @@ else
 fi
 
 
-
+echo " "
 echo "Checking SNMP requests, against not so nice device (delay)"
 ## Get snmp requests
+echo "Running "
+echo "tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay" 
 sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay &
 echo "tcpdump on"
 sleep 3
 
+echo "/tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19"
 /tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19
 
+echo "blob_delay size:  " $(wc -l /tmp/A2/blob_delay) " lines"
 echo "Requests sent, logged, now validating" 
+
+##Wait for file to fill, or quit. 
+timeOut=0
+while [ ! -s /tmp/A2/blob_delay ]; do
+    fs=$(wc -c /tmp/A2/blob_delay)
+    echo $( date +"%Y-%M-%d %H:%m:%S") " Waiting [$timeOut] for trace to arrive, current $fs bytes" 
+    sleep 1
+    ((timeOut++))
+
+    if [[ "$timeOut" -gt "10" ]]; then
+	echo $( date +"%Y-%M-%d %H:%m:%S") " Waited long enough, giving up."
+	echo " ERROR did not get packets in trace file within $timeOut s. "
+	exit 1
+    fi
+done
+
+
 
 read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob_delay | awk -F':' 'NR>1{print $3}' | awk '{sum+=$1;sumsq+=($1)^2;n++;} END {printf "%f %f %d\n",sum/n, sqrt((sumsq-sum^2/(n))/(n)),n} ' )
 

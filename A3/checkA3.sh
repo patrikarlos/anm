@@ -49,7 +49,7 @@ FS=1
 checkInfluxdb() {
     oid=$1
     chkIF=$(( oid - 1));
-    echo "Checking $oid as $chkIF " > $myBase/test.log
+    echo "Checking $oid as $chkIF " >> $myBase/test.log
     rm -f $myBase/rates.log
     curl -s -G 'http://localhost:8086/query?pretty=true&u=ats&p=atslabb00' --data-urlencode "db=A3" --data-urlencode "q= SELECT value FROM rate WHERE oid = '1.3.6.1.4.1.4171.40.$oid' GROUP BY * ORDER BY DESC LIMIT 10" | jq .results  | jq  '.[]  | .series ' | jq '.[] .values' |  grep -v '"'  | grep -v '[,[]' | grep -v ']' > $myBase/rates.log
     
@@ -100,6 +100,7 @@ if [ ! -e $myBase/backend ]; then
     exit 1
 fi
 
+chmod u+x $myBase/backend 
 if [ ! -x $myBase/backend ]; then
     echo "[Backend] File ($myBase/backend) does not have the exec bit set. " >>$myBase/test.log
     echo "No point to continue." >>$myBase/test.log
@@ -194,8 +195,10 @@ echo "Pushing Dashboard" >>$myBase/test.log
 resp=$(curl -s -u "$GRAFANA_CRED" -XPOST -H 'Content-Type: application/json;charset=UTF-8' -d@$myBase/bob3.json "http://$GRAFANA_IP:3000/api/dashboards/db")
 echo "Grafana said: $resp" >>$myBase/test.log
 
-##This will store data into influx. 
-$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.16 1.3.6.1.4.1.4171.40.17 1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
+##This will store data into influx.
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
+ 
+$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
 myPid=$!
 
 ##Get the current reference counters
