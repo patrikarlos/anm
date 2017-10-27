@@ -13,7 +13,8 @@ else
 fi
 }
 
-version='2017-10-10 11:44:03 +0200 Patrik Arlos 6709cc8ce620e924d85bf8fd52c192597e1f0bf3'
+#git log --pretty=format:'%ci %cn %H' -n 1
+version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9'
 
 
 echo "...................................."

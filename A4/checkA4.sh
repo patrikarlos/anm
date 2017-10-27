@@ -47,7 +47,10 @@ killServers() {
 }
 
 
-version='2017-10-13 16:01:54 +0200 Patrik Arlos fd2ea1e08047a9347b633816ab6925b93f9d78e1'
+#git log --pretty=format:'%ci %cn %H' -n 1
+version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9
+
+
 
 
 

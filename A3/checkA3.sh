@@ -13,9 +13,16 @@
 myConfig=$1
 myBase=$2
 
-echo "Checking A3: " `date` 
+#git log --pretty=format:'%ci %cn %H' -n 1
+version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9
 
 
+echo "...................................."
+echo $(date) . "Starting the evaluation of A3."
+echo "...................................."
+echo "This is version"
+echo "$version"
+echo " "
 
 if [ ! -e "$myConfig" ]; then
     echo "[ CA3: BUMMER ] " >>$myBase/test.log

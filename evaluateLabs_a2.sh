@@ -39,14 +39,15 @@ do
     dos2unix /tmp/A2/prober
     echo "[EvalLab] content of /tmp/A2"
     ls -la 
-    echo "[EvalLab] Executing test"
+    echo "[EvalLab] Executing test: $student"
 
     
     $myBasedir/A2/checkA2.sh
     ls
-    echo "[EvalLab] Removing /tmp/A2 folder. "
-    rm -rf /tmp/A2/*
+    studTmp=$(mktemp -d /tmp/evaluation-a2-XXXXXXXX)
+    echo "[EvalLab] Moving /tmp/A2 to $studTmp ."
+    mv  /tmp/A2 $studTmp
     echo "********************DELIMITER****************"
-    echo "[EvalLab] Killing snmpd"
-    sudo killall snmpd
+#    echo "[EvalLab] Killing snmpd"
+#    sudo killall snmpd
 done

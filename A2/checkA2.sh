@@ -11,8 +11,10 @@ refdevice2='192.168.184.40'
 credential_dev1="$refdevice1:1611:public"
 credential_dev2="$refdevice2:161:public"
 
+#git log --pretty=format:'%ci %cn %H' -n 1
+version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9'
 
-version='2017-10-10 11:44:03 +0200 Patrik Arlos 6709cc8ce620e924d85bf8fd52c192597e1f0bf3'
+
 
 echo "...................................."
 echo $(date) . "Starting the evaluation of A2."
@@ -112,7 +114,7 @@ startTime=$(date +%s)
 endTime=$(date +%s)
 
 duration=$((endTime-startTime))
-echo "That should have taken (approx) 10s. It took, $endTime-$starTime = $duration s. "
+echo "That should have taken (approx) 10s. It took, $endTime-$startTime = $duration s. "
 
 if [[ "$duration" -lt 9 ]]; then
     echo "Error: To send 20 requests at 2Hz should have taken arround 10s, you did it in $duration s". 
@@ -151,7 +153,10 @@ OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A2/rates.log)
 if [[ "$negrate" ]]; then
-    printf " (wrap) "
+    echo " (wrap) "
+    echo " ERROR: Your solution does not handle 64bit counters wrapping."
+    echo " "
+    exit 1
 fi
 
 
@@ -159,7 +164,7 @@ fi
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/rates.log )
 
-echo "Rates: $mvalue +-$stdval from $samples vs $OidC "
+echo "Rates: $mvalue +-$stdval from $samples vs $OidC , with $negs negative rates."
 
 if [ "$mvalue" -ne "$OidC" ]; then 
     echo "Error: Requested $OidC got $mvalue Hz"
