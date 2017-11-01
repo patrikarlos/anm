@@ -32,6 +32,7 @@ do
     ## Remove txt||pdf from filename
     rename 's/\.txt$//' $studTmp/*.txt
     echo "[EvalLab] Executing test" 
+    echo "[EvalLab] $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp &"
     $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp &
     studPID=$!
 

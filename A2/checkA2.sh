@@ -12,7 +12,7 @@ credential_dev1="$refdevice1:1611:public"
 credential_dev2="$refdevice2:161:public"
 
 #git log --pretty=format:'%ci %cn %H' -n 1
-version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9'
+version='2017-10-27 17:35:39 +0200 Patrik Arlos b47eded587e5131a321190536ac9248044208560'
 
 
 
@@ -35,7 +35,7 @@ printf "\t credref2   $credential_dev2 \n";
 
 ##prober <Agent IP:port:community> <sample frequency> <samples> <OID1> <OID2> …….. <OIDn>
 
-Ns=$(( ( RANDOM % 10 )  + 3 ));
+Ns=$(( ( RANDOM % 10 )  + 10 ));
 Fs=1;
 chkIF=2;
 ooid=$(( chkIF + 1));
@@ -125,33 +125,21 @@ else
     echo "OK"
 fi
 
-
-
-
-
-
-
-
-
-
-
-
-
 echo " "
 echo "Checking: data rate (high) "
-echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data" 
+echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data" 
 
-/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/data
+/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data
 
-echo "Got " $(wc -l /tmp/A2/data) " samples "
+echo "Got " $(wc -l /tmp/A2/high_data) " samples "
 
-awk '{print $3}' /tmp/A2/data > /tmp/A2/rates.log
+awk '{print $3}' /tmp/A2/high_data > /tmp/A2/high_rates.log
 
 chkIF=17;## Get counter rate
 OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
 
 ##check if negative rate is found
-negrate=$(grep '-' /tmp/A2/rates.log)
+negrate=$(grep '-' /tmp/A2/high_rates.log)
 if [[ "$negrate" ]]; then
     echo " (wrap) "
     echo " ERROR: Your solution does not handle 64bit counters wrapping."
@@ -160,17 +148,19 @@ if [[ "$negrate" ]]; then
 fi
 
 
+linesNotMatching=$(grep -v "$OidC"  /tmp/A2/high_rates.log | wc -l )
 
-## Get statistics
-read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/rates.log )
+echo "Found $linesNotMatching lines not matching the expected value"
 
-echo "Rates: $mvalue +-$stdval from $samples vs $OidC , with $negs negative rates."
-
-if [ "$mvalue" -ne "$OidC" ]; then 
-    echo "Error: Requested $OidC got $mvalue Hz"
+if (( "$linesNotMatching" > 0 )) ; then
+    echo "Error: Atleast one rate does not match, $linesNotMatching "
+    cat /tmp/A2/high_rates.log
     exit 1
-else
-    echo "Ok, rate high"
+else 
+    echo "High-rates; seems ok. "
+    echo "Grabbed $Ns samples, there were $linesNotMatching lines not matching the expected $OidC. "
+    echo "There were $negrate negative rates collected."
+
 fi
 
 echo ""

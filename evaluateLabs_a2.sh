@@ -23,7 +23,8 @@ do
     echo "[EvalLab] Checking $student; in $myRootDir"
     cd "$myRootDir"
     echo "[EvalLab] Cleaning /tmp/A2/"
-    rm -rf /tmp/A2/*
+    rm -rf /tmp/A2
+    mkdir /tmp/A2
     echo "[EvalLab] /tmp/A2/"
     ls /tmp/A2/
     echo "[EvalLab] Copying; cp -r $myRootDir/$student/* /tmp/A2"
@@ -46,7 +47,7 @@ do
     ls
     studTmp=$(mktemp -d /tmp/evaluation-a2-XXXXXXXX)
     echo "[EvalLab] Moving /tmp/A2 to $studTmp ."
-    mv  /tmp/A2 $studTmp
+    mv  /tmp/A2/* $studTmp
     echo "********************DELIMITER****************"
 #    echo "[EvalLab] Killing snmpd"
 #    sudo killall snmpd

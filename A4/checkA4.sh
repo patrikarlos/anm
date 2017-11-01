@@ -48,7 +48,8 @@ killServers() {
 
 
 #git log --pretty=format:'%ci %cn %H' -n 1
-version='2017-10-27 08:52:49 +0200 Patrik Arlos 5f91e6cb43b9e9fe0c2e2a988adc4e3b2e244ac9
+version='2017-10-27 17:35:39 +0200 Patrik Arlos b47eded587e5131a321190536ac9248044208560'
+
 
 
 
