@@ -82,7 +82,7 @@ fi
 ## Get the rate between samples
 echo " "
 echo "Checking data rate (random) " 
-awk '{print $3}' /tmp/A2/data > /tmp/A2/rates.log
+awk -F'|' '{print $2}' /tmp/A2/data > /tmp/A2/rates.log
 
 
 ##Get the current reference counters
@@ -99,7 +99,7 @@ echo "Rates: $mvalue +-$stdval from $samples"
 if [ "$mvalue" -ne "$OidC" ]; then 
     echo "Error: Requested $OidC got $mvalue du/tu"
     echo "this is your data."
-    head /tmp/A2/data
+    cat /tmp/A2/data
     exit 1
 else
     echo "Ok, rate 1."
@@ -133,7 +133,7 @@ echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/h
 
 echo "Got " $(wc -l /tmp/A2/high_data) " samples "
 
-awk '{print $3}' /tmp/A2/high_data > /tmp/A2/high_rates.log
+awk -F'|' '{print $2}' /tmp/A2/high_data > /tmp/A2/high_rates.log
 
 chkIF=17;## Get counter rate
 OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
@@ -200,6 +200,7 @@ echo ".1.3.6.1.2.1.2.2.1.16.3" >> /tmp/A2/myOids
 echo ".1.3.6.1.2.1.2.2.1.10.4" >> /tmp/A2/myOids
 echo ".1.3.6.1.2.1.2.2.1.16.4" >> /tmp/A2/myOids
 
+echo "Running: /tmp/A2/prober $credential_dev2 1 1 1.3.6.1.2.1.2.2.1.10.3 1.3.6.1.2.1.2.2.1.16.3 1.3.6.1.2.1.2.2.1.10.4 1.3.6.1.2.1.2.2.1.16.4 "
 /tmp/A2/prober $credential_dev2 1 1 1.3.6.1.2.1.2.2.1.10.3 1.3.6.1.2.1.2.2.1.16.3 1.3.6.1.2.1.2.2.1.10.4 1.3.6.1.2.1.2.2.1.16.4
 
 sleep 3
@@ -209,6 +210,9 @@ awk '{out=""; for(i=7;i<=NF;i++){printf "%s\n",$i};}' /tmp/A2/blob > /tmp/A2/oid
 
 if [ $(diff /tmp/A2/myOids /tmp/A2/oidsInReq|wc -l) -ne 0 ]; then 
     echo "There is a discrepancy betweeen what was requested, and was detected"
+    echo "I requested these; got these"
+    diff -y /tmp/A2/myOids /tmp/A2/oidsInReq 
+
     exit 1
 else
     echo "All OIDS are present, no extra no missing."

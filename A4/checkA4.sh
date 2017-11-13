@@ -179,6 +179,22 @@ sudo netstat -anp | grep 50162
 
 
 echo "------------REAL TEST----------------"
+
+echo -n $( date +"%Y-%M-%d %H:%m:%S") "Checking:  that there is nothing in the system (initialize the db), "
+response=$(curl -s "http://127.0.0.1:8000/getStatus.php")
+if [ "$response" ==  "FALSE" ]; then
+    echo " OK"
+else
+    echo " ERROR: "
+    echo " WebServer; responded $response thats not what I expected (FALSE). "
+    killServers
+    exit 1
+fi
+
+
+
+
+
 echo -n $( date +"%Y-%M-%d %H:%m:%S") " Set trapdestination"
 response=$(curl -s "http://127.0.0.1:8000/setTrapR.php?ip=192.168.184.1&port=161&community=public")
 if [ "$response" ==  "OK" ]; then
