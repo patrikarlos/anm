@@ -22,7 +22,11 @@ source Wrapup/supportfunc
 
 for student in $myRootDir/*
 do 
+
     logIt "Checking $student in $myRootDir"
+    logIt " "
+    logIt "-begin-student- "
+    logIt " "
 
     ##Find the archive
     archives=$(ls "$student"/*.tar.gz | wc -l )
@@ -34,8 +38,10 @@ do
 	logIt $(ls -la *.tar.gz)
 	continue;
     fi
+
     archivename=$(ls "$student"/*.tar.gz)
     logIt "One archive found, $archivename." 
+
     userid=$(basename "$archivename" .tar.gz)
     array=(${userid//-/ })
     classid=${array[0]}
@@ -80,4 +86,7 @@ do
     
     logIt "Preparing $builddir that we can read it"
     chmod -R ag+rwx $builddir
+    logIt " "
+    logIt "-end-student- "
+    logIt " "
 done
