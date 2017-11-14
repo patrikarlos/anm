@@ -1,0 +1,50 @@
+#!/bin/bash
+
+
+logIt() {
+    theStuff="$1"
+    logstr=$(echo $(date +"%F %T") "(EvL) $theStuff")
+    if (( $logType==3 )); then 
+	## File and stdout
+	echo "FS: $logstr " | tee -a $feedbackFile
+    elif (( $logType==2 )); then 
+	## File only
+	echo "F: $logstr " >> $feedbackFile
+    elif (( $logType==1 )); then 
+	## STDOUT only
+	echo "S: $logstr "
+    elif (( $logType==0 )); then 
+	## Silent
+	echo "."
+    else
+	echo "Unknown logType ($logType). Supports 0-3"
+    fi
+}
+
+checkFile(){
+    theFile="$1"
+    logIt "Checking $theFile"
+    if [[ -f "$theFile" ]]; then
+	logIt "$theFile OK"
+    else
+	logIt "$theFile missing"
+    fi
+}
+
+checkFileOpt(){
+    theFile="$1"
+    logIt "Checking $theFile"
+    if [[ -f "$theFile" ]]; then
+	logIt "$theFile OK"
+    fi
+}
+
+checkFileMode(){
+    theFile="$1"
+    logIt "Checking $theFile"
+    if [[ -x "$theFile" ]]; then
+	logIt "$theFile is executable"
+    else
+	logIt "$theFile missing the executable bit, will not 'start' (man chmod)."
+    fi
+}
