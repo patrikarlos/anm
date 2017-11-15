@@ -97,16 +97,16 @@ Example(s)
 -------
 
 To test A1, run  (within the A1 directory)
-./checkA1.sh ~/myA1
+./checkA1.sh 
 
 To test A2, run  (within the A2 directory)
-./checkA2.sh ~/myA2
+./checkA2.sh 
 
 To test A3, run  (within the A3 directory)
-./checkA3.sh ~/myA3
+./checkA3.sh <configfile> <folder-with-your-solution>
 
 To test A4, run  (within the A4 directory)
-./checkA4.sh ~/myA4
+./checkA4.sh <folder-with-your-solution>
 
 To test Wrapup, run  (within the Wrapup directory)
 ./checkWrapup.sh et2536-pal.tar.gz

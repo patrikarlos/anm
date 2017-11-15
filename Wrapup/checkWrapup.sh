@@ -42,6 +42,25 @@ array=(${userid//-/ })
 classid=${array[0]}
 userid=${array[1]}
 logIt "Class and UserId (based on archive name) => $classid and $userid" 
+
+if [ "et2536" == "$classid" ]; then
+    logIt "Correct class"
+else
+    logIt "ERROR; archivename should be et2636-<acro>.tar.gz not $archivename"
+    exit
+fi
+
+if [ -z $userid ]; then
+    logIt "ERROR; archivename should be et2636-<acro>.tar.gz not $archivename"
+    exit
+fi  
+
+myArchive=$(echo "$classid-$userid.tar.gz")
+if [ "$myArchive" != "$archivename" ]; then
+    logIt "ERROR; archivename should be et2636-<acro>.tar.gz not $archivename"
+    exit
+fi  
+
 #    tar -zxvf *.tar.gz 
 bname=$(echo "$classid-$userid")
 builddir=$(mktemp -t -d ANM-XXXX )

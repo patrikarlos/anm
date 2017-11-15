@@ -79,7 +79,7 @@ if (( $readmeCnt >= 1 )) ; then
     lenreadme=$(ls -la | grep -i readme.txt | head -1 | awk '{print $5}')
     logIt "readme.txt present and has $lenreadme characters"
 else
-	logIt "In the folder of your submitted archive, the readme.txt file was missing."
+    exit
 fi
 
 logIt "Checking main db.conf, in " $(pwd) 
@@ -120,8 +120,7 @@ if (( $dbconfCnt >= 1 )) ; then
 	logIt "Main: Missing the following variables in db.conf ; $missVar "
     fi
 else
-    logIt "db.conf is missing"
-    logIt "In the folder of your submitted archive, the readme.txt file was missing."
+    logIt "db.conf is missing from your archive"
 fi
 
 

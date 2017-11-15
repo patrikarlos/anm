@@ -102,7 +102,7 @@ echo "...................................." >>$myBase/test.log
 
 
 if [ ! -e $myBase/backend ]; then
-    echo "[Backend] File ($myBase/backend) is missing. " >>$myBase/test.log
+    echo "[Backend] ERROR ($myBase/backend) is missing. " >>$myBase/test.log
     echo "No point to continue." >>$myBase/test.log
     exit 1
 fi

@@ -191,10 +191,6 @@ else
     exit 1
 fi
 
-
-
-
-
 echo -n $( date +"%Y-%M-%d %H:%m:%S") " Set trapdestination"
 response=$(curl -s "http://127.0.0.1:8000/setTrapR.php?ip=192.168.184.1&port=161&community=public")
 if [ "$response" ==  "OK" ]; then

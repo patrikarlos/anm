@@ -31,7 +31,21 @@ printf "\t credref1   $credential_dev1 \n";
 printf "\t credref2   $credential_dev2 \n";
 
 
+if [ ! -e /tmp/A2/prober ]; then
+    echo "Error: /tmp/A2/prober does not exist. ";
+    echo "Folder contains:"
+    ls /tmp/A2
+    echo "        Leaving."
+    exit 1
+fi
 
+if [ ! -x /tmp/A2/prober ]; then
+    echo "Error: /tmp/A2/prober does not have the executable bit set. ";
+    echo "Folder contains:"
+    ls /tmp/A2
+    echo "        Leaving."
+    exit 1
+fi
 
 ##prober <Agent IP:port:community> <sample frequency> <samples> <OID1> <OID2> …….. <OIDn>
 
