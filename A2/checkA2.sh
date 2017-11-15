@@ -12,7 +12,8 @@ credential_dev1="$refdevice1:1611:public"
 credential_dev2="$refdevice2:161:public"
 
 #git log --pretty=format:'%ci %cn %H' -n 1
-version='2017-10-27 17:35:39 +0200 Patrik Arlos b47eded587e5131a321190536ac9248044208560'
+version='2017-11-15 11:38:50 +0100 Patrik Arlos 17bfb90ef03e1c6fca6ef65271b1f6b0482305df'
+
 
 
 
@@ -116,7 +117,7 @@ if [ "$mvalue" -ne "$OidC" ]; then
     cat /tmp/A2/data
     exit 1
 else
-    echo "Ok, rate 1."
+    echo "Ok, rate matches ($mvalue vs $OidC)."
 fi
 
 echo " "

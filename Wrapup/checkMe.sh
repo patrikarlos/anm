@@ -12,6 +12,7 @@ if [ -z "$logType" ]; then
 fi
 
 
+version='2017-11-15 11:38:50 +0100 Patrik Arlos 17bfb90ef03e1c6fca6ef65271b1f6b0482305df'
 
 
 logIt() {
@@ -64,6 +65,12 @@ checkFileMode(){
     fi
 }
 
+echo "...................................."
+echo $(date +"%F %T") "Starting the evaluation of Wraup."
+echo "...................................."
+echo "This is version"
+echo "$version"
+echo "
 
 echo $(date +"%F %T") "Log.info myRootDir=$myRootDir" 
 echo $(date +"%F %T") "feedbackFile='$feedbackFile'"
