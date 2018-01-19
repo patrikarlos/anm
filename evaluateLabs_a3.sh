@@ -27,18 +27,24 @@ do
     echo "[EvalLab] $student data will be in $studTmp"
     echo "[EvalLab] Copying; cp -r $student/* $studTmp"
     cp -r "$student"/* "$studTmp/"
+    echo "Evaluating: $student " > "$studTmp/student.txt"
     ls $studTmp
 
     ## Remove txt||pdf from filename
     rename 's/\.txt$//' $studTmp/*.txt
     echo "[EvalLab] Executing test" 
     echo "[EvalLab] $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp &"
-    $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp &
+    $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp 
     studPID=$!
-
+    echo "Showing picture"
+    gwenview $studTmp/result.png 
+    echo "Checking log file"
+    grep -i ERROR $studTmp/test.log
+    echo "Did you see any ERROR?"
     echo "$studPID" >> $myBasedir/myPids
     echo "$student evaluation.pid = $studPID "
     echo "********************DELIMITER****************"
+    read -p "Press enter to continue"
 
 done
 

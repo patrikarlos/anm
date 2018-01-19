@@ -70,7 +70,7 @@ echo $(date +"%F %T") "Starting the evaluation of Wraup."
 echo "...................................."
 echo "This is version"
 echo "$version"
-echo "
+echo " "
 
 echo $(date +"%F %T") "Log.info myRootDir=$myRootDir" 
 echo $(date +"%F %T") "feedbackFile='$feedbackFile'"
@@ -81,11 +81,13 @@ cd "$myRootDir"
 currdir=$(pwd) 
 logIt "We will check the files in $currdir"
 logIt "Checking files in the root dir (readme.txt db.conf) "
+
 readmeCnt=$(ls | grep -i readme.txt | wc -l )
 if (( $readmeCnt >= 1 )) ; then
     lenreadme=$(ls -la | grep -i readme.txt | head -1 | awk '{print $5}')
     logIt "readme.txt present and has $lenreadme characters"
 else
+    logIt "readme.txt is missing " 
     exit
 fi
 

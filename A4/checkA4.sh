@@ -157,7 +157,7 @@ echo $( date +"%Y-%M-%d %H:%m:%S") " Starting snmptrapd " | tee -a test.log
 
 
 # ##Start SNMPd, and log the output to file.
-snmptrapd -Onvq -n -f -c snmptrapd.conf -C -a -Lf snmptrapd.log >> trap.log &
+snmptrapd -Onq -n -f -c snmptrapd.conf -C -a -Lf snmptrapd.log >> trap.log &
 snmpPid=$!
 
 echo $( date +"%Y-%M-%d %H:%m:%S") " Snmptrapd started; $snmpPid "
@@ -789,7 +789,13 @@ curl -s "http://127.0.0.1:8000/getStatus.php"
 echo "------------END TEST-----------------"
 
 killServers
+echo " "
 echo "It might have been a great Success"
+echo " Hopefully ok "
+echo " "
+
+
+
 
 
 

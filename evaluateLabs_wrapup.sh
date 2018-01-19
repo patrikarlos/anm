@@ -71,6 +71,7 @@ do
     cp -v "$myBasedir/Wrapup/db.conf" "$builddir/"
     logIt "Entering user folder, $classid-$userid . "
    
+    logIt "Calling:     $myBasedir/Wrapup/checkMe.sh '$classid-$userid' '$builddir/mylog' 2"
     $myBasedir/Wrapup/checkMe.sh "$classid-$userid" "$builddir/mylog" 2
     
     logIt "Returned from test. "

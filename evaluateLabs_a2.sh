@@ -40,15 +40,33 @@ do
     dos2unix /tmp/A2/prober
     echo "[EvalLab] content of /tmp/A2"
     ls -la 
+    echo "[EvalLab] Checking if any prober runs..interference with snmp."
+    if pidof -x "prober" >/dev/null; then
+	echo "[prober] Allready running"
+	echo "        killing"
+	q=$(pidof -x "prober")
+	echo "Got this; $q <>"
+	pkill prober
+    else 
+	echo " Did not detect any prober"
+	q=$(pidof -x "prober")
+	echo "Got this; $q <>"
+    fi
+
+
     echo "[EvalLab] Executing test: $student"
 
     
     $myBasedir/A2/checkA2.sh
     ls
+
+    echo "student name:$student " > /tmp/A2/student.txt
     studTmp=$(mktemp -d /tmp/evaluation-a2-XXXXXXXX)
     echo "[EvalLab] Moving /tmp/A2 to $studTmp ."
     mv  /tmp/A2/* $studTmp
+    echo "********* $student **************************"
     echo "********************DELIMITER****************"
+    read -p "Press enter to continue"
 #    echo "[EvalLab] Killing snmpd"
 #    sudo killall snmpd
 done

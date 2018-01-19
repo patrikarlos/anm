@@ -204,9 +204,11 @@ resp=$(curl -s -u "$GRAFANA_CRED" -XPOST -H 'Content-Type: application/json;char
 echo "Grafana said: $resp" >>$myBase/test.log
 
 ##This will store data into influx.
-echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
+#echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null > $myBase/backend.log "
  
-$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
+#$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
+$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8 2>/dev/null > $myBase/backend.log &
 myPid=$!
 
 ##Get the current reference counters
@@ -258,10 +260,10 @@ echo "Checking if interface 1 (oid==2) was properly handled."  >>$myBase/test.lo
 checkInfluxdb 2 
 echo "Checking if interface 2 (oid==3) was properly handled." >>$myBase/test.log
 checkInfluxdb 3
-echo "Checking if interface 17 (oid==18) was properly handled."  >>$myBase/test.log
-checkInfluxdb 18
-echo "Checking if interface 18 (oid==19) was properly handled." >>$myBase/test.log
-checkInfluxdb 19
+#echo "Checking if interface 17 (oid==18) was properly handled."  >>$myBase/test.log
+#checkInfluxdb 18
+#echo "Checking if interface 18 (oid==19) was properly handled." >>$myBase/test.log
+#checkInfluxdb 19
 
 
 

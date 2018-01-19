@@ -37,4 +37,5 @@ do
     echo "$studPID" >> $myBasedir/myPids
     echo "$student evaluation.pid = $studPID "
     echo "********************DELIMITER****************"
+    read -p "Press enter to continue"
 done

@@ -7,6 +7,7 @@ internetNIC=br0
 
 ##
 refdevice1='192.168.185.60'
+#refdevice1='10.1.0.169'
 refdevice2='192.168.184.40'
 credential_dev1="$refdevice1:1611:public"
 credential_dev2="$refdevice2:161:public"
@@ -23,6 +24,16 @@ echo "...................................."
 echo "This is version"
 echo "$version"
 echo " "
+
+echo "Check cpu type, needs to be 64 bit..."
+cpustat=$(lscpu | grep 'op-mode' | grep '64-bit')
+if [[ "$cpustat" ]]; then
+    echo " 64-bit seems present.";
+else
+    echo "ERROR: You need to run this on a 64-bit system. As it will do 64-bit arithmetic."
+    exit 1;
+fi
+
 
 echo "Checking Correct sample count"
 echo "Working with this;"
@@ -80,7 +91,7 @@ echo "Checking: Sample rate => "
 
 
 ## Get the rate between samples
-awk 'NR>1{print $1-p} {p=$1}' /tmp/A2/data > /tmp/A2/Trates.log
+awk -F'|' 'NR>1{print $1-p} {p=$1}' /tmp/A2/data > /tmp/A2/Trates.log
 
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/Trates.log )
@@ -111,7 +122,7 @@ read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i]
 
 echo "Rates: $mvalue +-$stdval from $samples"
 
-if [ "$mvalue" -ne "$OidC" ]; then 
+if [[ "$mvalue" -ne "$OidC" ]]; then 
     echo "Error: Requested $OidC got $mvalue du/tu"
     echo "this is your data."
     cat /tmp/A2/data
@@ -178,15 +189,26 @@ else
 
 fi
 
+rm /tmp/A2/blob
 echo ""
 echo "Checking:  Requests, against a -REAL- device. "
+echo "Running:  sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC host $refdevice2 and udp &"
+#echo "Checking blob1";ls -la /tmp/A2/blob
+
 ## Get snmp requests
-sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob &
+sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC host $refdevice2 and udp &
 echo "tcpdump on"
 sleep 3
 
+#echo "Checking blob2";ls -la /tmp/A2/blob
+
 echo "Running /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3" 
 /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3
+sleep 1 
+
+#echo "Checking blob3"; ls -la /tmp/A2/blob
+
+tcpdump -c 10 -ttt -r /tmp/A2/blob.pcap -n ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob
 
 printf "Requests sent, logged, validating\n" 
 
@@ -198,6 +220,8 @@ stdCheck=$(echo $stdev'<0.1'|bc -l)
 if [ "$stdCheck" -eq "0" ]; then
     echo "The std.dev is a bit high, $stdev  vs required 0.1"
     echo "Target average was 1.0 s yours was $avg s".
+    echo "Data found in blob"
+ 
     exit 1
 else
     echo "Nice request stability; $stdev vs required 0.1"
@@ -238,21 +262,30 @@ echo " "
 echo "Checking SNMP requests, against not so nice device (delay)"
 ## Get snmp requests
 echo "Running "
-echo "tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay" 
-sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay &
+echo "Will grab request and response, then filter requests to a specific file"
+echo "tcpdump -c 20 -w tmp/A2/blob_delay_all -n -i $internetNIC host $refdevice1 and udp and port 1611 "
+sudo tcpdump -c 20 -w /tmp/A2/blob_delay_all -n -i $internetNIC host $refdevice1 and udp and port 1611 &
 echo "tcpdump on"
 sleep 3
 
 echo "/tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19"
 /tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19
 
-echo "blob_delay size:  " $(wc -l /tmp/A2/blob_delay) " lines"
+echo "Grabbing requests shiping to blob_delay_nsnd, all data in blob_delay_nsnd_all_data"
+echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 udp and dst port 1611 > /tmp/A2/blob_delay_nsnd"  
+sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay_nsnd  
+echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all > /tmp/A2/blob_delay_nsnd_all_data  "
+sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all > /tmp/A2/blob_delay_nsnd_all_data  
+
+
+
+echo "blob_delay size:  " $(wc -l /tmp/A2/blob_delay_nsnd) " lines"
 echo "Requests sent, logged, now validating" 
 
 ##Wait for file to fill, or quit. 
 timeOut=0
-while [ ! -s /tmp/A2/blob_delay ]; do
-    fs=$(wc -c /tmp/A2/blob_delay)
+while [ ! -s /tmp/A2/blob_delay_nsnd ]; do
+    fs=$(wc -c /tmp/A2/blob_delay_nsnd)
     echo $( date +"%Y-%M-%d %H:%m:%S") " Waiting [$timeOut] for trace to arrive, current $fs bytes" 
     sleep 1
     ((timeOut++))
@@ -266,7 +299,7 @@ done
 
 
 
-read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob_delay | awk -F':' 'NR>1{print $3}' | awk '{sum+=$1;sumsq+=($1)^2;n++;} END {printf "%f %f %d\n",sum/n, sqrt((sumsq-sum^2/(n))/(n)),n} ' )
+read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob_delay_nsnd | awk -F':' 'NR>1{print $3}' | awk '{sum+=$1;sumsq+=($1)^2;n++;} END {printf "%f %f %d\n",sum/n, sqrt((sumsq-sum^2/(n))/(n)),n} ' )
 
 echo "Mean: $avg Stddev: $stdev N: $samps"
 stdCheck=$(echo $stdev'<0.1'|bc -l)
@@ -274,12 +307,13 @@ stdCheck=$(echo $stdev'<0.1'|bc -l)
 if [ "$stdCheck" -eq "0" ]; then
     echo "The std.dev is a bit high, $stdev  vs required 0.1"
     echo "Target average was 1.0 s yours was $avg s".
+    echo "Data is in blob_delay_nsnd and blob_delay_nsnd_all_data"
     exit 1
 else
     echo "Nice request stability; $stdev vs required 0.1"
 fi
 
-
+echo " "
 echo "Checking SNMP requests, against not so nice device (bad response)"
 ## Get snmp requests
 sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob &
@@ -295,14 +329,19 @@ read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob | awk -F':' 'NR>1{print 
 echo "Mean: $avg Stddev: $stdev N: $samps"
 stdCheck=$(echo $stdev'<0.1'|bc -l)
 
-if [ "$stdCheck" -eq "0" ]; then
-    echo "The std.dev is a bit high, $stdev  vs required 0.1"
-    echo "Target average was 1.0 s yours was $avg s".
+if [ -z "$stdCheck" ]; then 
+    echo "An issue with stdCheck = $stdCheck, which means blob issue. "
+    echo "There are " . $(wc -l /tmp/A2/blob) . " lines of data."
     exit 1
 else
-    echo "Nice request stability; $stdev vs required 0.1"
+    if [ "$stdCheck" -eq "0" ]; then
+	echo "The std.dev is a bit high, $stdev  vs required 0.1"
+	echo "Target average was 1.0 s yours was $avg s".
+	exit 1
+    else
+	echo "Nice request stability; $stdev vs required 0.1"
+    fi
 fi
-
 
 echo "---------------------------------"
 echo "If no issues poped up.. :thumbsup:"
