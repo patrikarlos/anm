@@ -41,7 +41,8 @@ source $myConfig
 echo "[ CA3: SETUP ] Using $myBase for source/storage/log" 
 
 
-refdevice1='192.168.185.60'
+refdevice1='18.219.51.6'
+#refdevice1='192.168.185.60'
 credential_dev1="$refdevice1:1611:public"
 FS=1
 

@@ -6,7 +6,8 @@ internetNIC=br0
 
 
 ##
-refdevice1='192.168.185.60'
+refdevice1='18.219.51.6'
+#refdevice1='192.168.185.60'
 #refdevice1='10.1.0.169'
 refdevice2='192.168.184.40'
 credential_dev1="$refdevice1:1611:public"
