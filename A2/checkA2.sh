@@ -2,7 +2,8 @@
 
 ##VARIABLES; must be filled correctly
 
-internetNIC=br0
+internetNIC1=em1
+internetNIC2=br0
 
 
 ##
@@ -193,11 +194,11 @@ fi
 rm /tmp/A2/blob
 echo ""
 echo "Checking:  Requests, against a -REAL- device. "
-echo "Running:  sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC host $refdevice2 and udp &"
+echo "Running:  sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC2 host $refdevice2 and udp &"
 #echo "Checking blob1";ls -la /tmp/A2/blob
 
 ## Get snmp requests
-sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC host $refdevice2 and udp &
+sudo tcpdump -c 20 -w /tmp/A2/blob.pcap -i $internetNIC2 host $refdevice2 and udp &
 echo "tcpdump on"
 sleep 3
 
@@ -230,7 +231,7 @@ fi
 
 
 printf "Checking that the prober contains ALL OIDS in one request."
-sudo tcpdump -c 1 -ttt -n -i $internetNIC ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob &
+sudo tcpdump -c 1 -ttt -n -i $internetNIC2 ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob &
 echo "tcpdump on"
 sleep 3
 
@@ -264,13 +265,13 @@ echo "Checking SNMP requests, against not so nice device (delay)"
 ## Get snmp requests
 echo "Running "
 echo "Will grab request and response, then filter requests to a specific file"
-echo "tcpdump -c 20 -w tmp/A2/blob_delay_all -n -i $internetNIC host $refdevice1 and udp and port 1611 "
-sudo tcpdump -c 20 -w /tmp/A2/blob_delay_all -n -i $internetNIC host $refdevice1 and udp and port 1611 &
+echo "tcpdump -c 20 -w tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port 1611 "
+sudo tcpdump -c 20 -w /tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port 1611 &
 echo "tcpdump on"
 sleep 3
 
-echo "/tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19"
-/tmp/A2/prober $credential_dev1 1 10 1.3.6.1.4.1.4171.40.19
+echo "/tmp/A2/prober $credential_dev1 0.5 10 1.3.6.1.4.1.4171.40.19"
+/tmp/A2/prober $credential_dev1 0.5 10 1.3.6.1.4.1.4171.40.19
 
 echo "Grabbing requests shiping to blob_delay_nsnd, all data in blob_delay_nsnd_all_data"
 echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 udp and dst port 1611 > /tmp/A2/blob_delay_nsnd"  
@@ -317,7 +318,7 @@ fi
 echo " "
 echo "Checking SNMP requests, against not so nice device (bad response)"
 ## Get snmp requests
-sudo tcpdump -c 10 -ttt -n -i $internetNIC ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob &
+sudo tcpdump -c 10 -ttt -n -i $internetNIC1 ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob &
 echo "tcpdump on"
 sleep 3
 
