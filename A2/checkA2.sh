@@ -170,7 +170,8 @@ OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
 negrate=$(grep '-' /tmp/A2/high_rates.log)
 if [[ "$negrate" ]]; then
     echo " (wrap) "
-    echo " ERROR: Your solution does not handle 64bit counters wrapping."
+    echo " ERROR: Your solution does not handle 64bit counters wrapping, found a negative rate.."
+    echo "$negrate "
     echo " "
     exit 1
 fi
@@ -204,8 +205,8 @@ sleep 3
 
 #echo "Checking blob2";ls -la /tmp/A2/blob
 
-echo "Running /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3" 
-/tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.3
+echo "Running /tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.14" 
+/tmp/A2/prober $credential_dev2 1 10 1.3.6.1.2.1.2.2.1.10.14
 sleep 1 
 
 #echo "Checking blob3"; ls -la /tmp/A2/blob
@@ -306,14 +307,31 @@ read avg stdev samps <<<$(awk '{print $1}' /tmp/A2/blob_delay_nsnd | awk -F':' '
 echo "Mean: $avg Stddev: $stdev N: $samps"
 stdCheck=$(echo $stdev'<0.1'|bc -l)
 
+avgDiff=$(echo $avg - 2 | bc -l )
+echo "Checking average, avgDiff = $avgDiff"
+
+if [[ "$avgDiff" = *'-'* ]]; then
+    avgCheck=$(echo '(-1)*'$avgDiff'<0.1'| bc -l )
+else
+    avgCheck=$(echo $avgDiff'<0.1'| bc -l )
+fi
+if [ "$avgCheck" -eq "0" ]; then
+    echo "Average was not ok, your was $avg the expected was 2."
+    exit 1;
+fi
+
+
 if [ "$stdCheck" -eq "0" ]; then
     echo "The std.dev is a bit high, $stdev  vs required 0.1"
-    echo "Target average was 1.0 s yours was $avg s".
+    echo "Target average was 2.0 s yours was $avg s".
     echo "Data is in blob_delay_nsnd and blob_delay_nsnd_all_data"
     exit 1
 else
     echo "Nice request stability; $stdev vs required 0.1"
 fi
+
+
+
 
 echo " "
 echo "Checking SNMP requests, against not so nice device (bad response)"

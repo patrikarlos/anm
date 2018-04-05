@@ -324,8 +324,8 @@ while [ ! -s blob ]; do
     sleep 1
     ((timeOut++))
 
-    if [[ "$timeOut" > 10 ]]; then
-	echo $( date +"%Y-%M-%d %H:%m:%S") " Waited long enough, giving up."
+    if [ "$timeOut" -gt 10 ]; then
+	echo $( date +"%Y-%M-%d %H:%m:%S") " Waited long enough ($timeOut), giving up."
 	echo " ERROR did not get any trap within 10 s. "
 	killServers
 	exit 1
