@@ -40,7 +40,6 @@ source $myConfig
 
 echo "[ CA3: SETUP ] Using $myBase for source/storage/log" 
 
-
 refdevice1='18.219.51.6'
 #refdevice1='192.168.185.60'
 credential_dev1="$refdevice1:1611:public"
@@ -55,12 +54,20 @@ FS=1
 #    fi
 #}
 
+cleanInfluxMeasurement(){
+    boa=$(curl -XPOST -s -G "http://localhost:8086/query?pretty=true&u=$INFLUX_USER&p=$INFLUX_PWD" --data-urlencode "db=A3" --data-urlencode "q= drop measurement rate")
+    echo "Clean Influx Measurments; $boa "
+    echo "---------"
+}
+
 checkInfluxdb() {
     oid=$1
     chkIF=$(( oid - 1));
     echo "Checking $oid as $chkIF " >> $myBase/test.log
     rm -f $myBase/rates.log
-    curl -s -G 'http://localhost:8086/query?pretty=true&u=ats&p=atslabb00' --data-urlencode "db=A3" --data-urlencode "q= SELECT value FROM rate WHERE oid = '1.3.6.1.4.1.4171.40.$oid' GROUP BY * ORDER BY DESC LIMIT 10" | jq .results  | jq  '.[]  | .series ' | jq '.[] .values' |  grep -v '"'  | grep -v '[,[]' | grep -v ']' > $myBase/rates.log
+#Stopped working 20180606 updated influx.
+#    curl -s -G 'http://localhost:8086/query?pretty=true&u=ats&p=atslabb00' --data-urlencode "db=A3" --data-urlencode "q= SELECT value FROM rate WHERE oid = '1.3.6.1.4.1.4171.40.$oid' GROUP BY * ORDER BY DESC LIMIT 10" | jq .results  | jq  '.[]  | .series ' | jq '.[] .values' |  grep -v '"'  | grep -v '[,[]' | grep -v ']' > $myBase/rates.log
+        curl -s -G 'http://localhost:8086/query?pretty=true&u=ats&p=atslabb00' --data-urlencode "db=A3" --data-urlencode "q= SELECT value FROM rate WHERE oid = '1.3.6.1.4.1.4171.40.$oid' GROUP BY * ORDER BY DESC LIMIT 10" | jq .results  | jq  '.[]  | .series ' | jq '.[] .values' | grep -v '[,[]' | grep -v ']' | tr -d '"' | tr -s ' ' > $myBase/rates.log
     
  
     #----
@@ -76,6 +83,7 @@ checkInfluxdb() {
     fi
 
     echo "Rates: $OidC vs $mvalue +-$stdval from $samples samples, difference $difv ." >>$myBase/test.log
+    echo "Rates: $OidC vs $mvalue +-$stdval from $samples samples, difference $difv ." 
 
 
     if [ "$mvalue" -ne "$OidC" ]; then 
@@ -96,6 +104,13 @@ checkInfluxdb() {
     fi
    
 }
+
+
+echo "[ CA3 Clean Influx ] "
+
+cleanInfluxMeasurement
+
+echo "[ CA3 Clean Influx done ] "
 
 
 echo "...................................." >>$myBase/test.log
@@ -206,7 +221,8 @@ echo "Grafana said: $resp" >>$myBase/test.log
 
 ##This will store data into influx.
 #echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
-echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null" >> $myBase/test.log 
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null" >> $myBase/test.log
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null"
  
 #$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
 $myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8 2>/dev/null > $myBase/backend.log &
