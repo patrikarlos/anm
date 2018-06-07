@@ -46,8 +46,8 @@ if [ ! -e /tmp/A1/subagent ]; then
     exit 1
 fi
 
-lh=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  localhost)
-lip=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  127.0.0.1)
+lh=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  localhost | grep -v '^#' )  
+lip=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  127.0.0.1 | grep -v '^#' )
 lprotport=$(cat /tmp/A1/snmpd.conf  | grep agentAddress | grep  udp:161)
 
 if [[ ! -z "$lh" ]]; then
