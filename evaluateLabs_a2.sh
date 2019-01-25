@@ -22,6 +22,9 @@ for student in *
 do 
     echo "[EvalLab] Checking $student; in $myRootDir"
     cd "$myRootDir"
+    if [[ ! -e /tmp/A2 ]]; then
+	mkdir -p /tmp/A2;
+    fi
     echo "[EvalLab] Cleaning /tmp/A2/"
     rm -rf /tmp/A2
     mkdir /tmp/A2

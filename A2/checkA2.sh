@@ -96,13 +96,20 @@ echo "Checking: Sample rate => "
 awk -F'|' 'NR>1{print $1-p} {p=$1}' /tmp/A2/data > /tmp/A2/Trates.log
 
 ## Get statistics
-read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/Trates.log )
+read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%g %g %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/Trates.log )
 
 echo "Time: $mvalue +-$stdval from $samples samples. "
 
+#sampleDiff=$((mvalue-Fs)) 
+sampleDiff=$(echo $mvalue - $Fs | bc -l )
+
 if [ "$mvalue" -ne "$Fs" ]; then 
-    echo "Error: Requested $Fs got $mvalue bps"
-    exit 1
+    echo "Error: Requested $Fs got $mvalue s"
+    if [[ "$sampleDiff" -lt 1 ]]; then
+	echo "Difference is small, $sampleDiff its Ok".
+    else
+	exit 1
+    fi
 else 
     echo "OK; Sample rate seems reasonable."
 fi

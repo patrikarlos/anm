@@ -22,6 +22,10 @@ for student in *
 do 
     echo "[EvalLab] Checking $student; in $myRootDir"
     cd "$myRootDir"
+    if [[ ! -e /tmp/A1 ]]; then
+	mkdir -p /tmp/A1;
+    fi
+    
     echo "[EvalLab] Cleaning /tmp/A1/"
     rm -rf /tmp/A1/*
     echo "[EvalLab] /tmp/A1/"
@@ -41,9 +45,14 @@ do
 
     $myBasedir/A1/checkA1.sh
     ls
-    echo "[EvalLab] Removing /tmp/A1 folder. "
-    rm -rf /tmp/A1/*
-    echo "********************END: $student****************"
+
+
     echo "[EvalLab] Killing snmpd"
     sudo killall snmpd
+    read -p  "press key to continue"
+
+    echo "[EvalLab] Removing /tmp/A1 folder. "
+    rm -rf /tmp/A1/*
+    echo "********************END: $student****************"    
+    
 done
