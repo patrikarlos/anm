@@ -11,7 +11,7 @@ refdevice1='18.219.51.6'
 #refdevice1='192.168.185.60'
 #refdevice1='10.1.0.169'
 refdevice2='192.168.184.40'
-credential_dev1="$refdevice1:1611:public"
+credential_dev1="$refdevice1:1612:public"
 credential_dev2="$refdevice2:161:public"
 
 #git log --pretty=format:'%ci %cn %H' -n 1
@@ -66,7 +66,7 @@ fi
 Ns=$(( ( RANDOM % 10 )  + 10 ));
 Fs=1;
 chkIF=2;
-ooid=$(( chkIF + 1));
+ooid=$(( chkIF ));
 
 
 
@@ -161,7 +161,7 @@ else
 fi
 
 echo " "
-echo "Checking: data rate (high) "
+echo "Checking: data rate (high), nasty agent "
 echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data" 
 
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data

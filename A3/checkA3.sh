@@ -42,7 +42,7 @@ echo "[ CA3: SETUP ] Using $myBase for source/storage/log"
 
 refdevice1='18.219.51.6'
 #refdevice1='192.168.185.60'
-credential_dev1="$refdevice1:1611:public"
+credential_dev1="$refdevice1:1612:public"
 FS=1
 
 #abort() {
@@ -220,12 +220,11 @@ resp=$(curl -s -u "$GRAFANA_CRED" -XPOST -H 'Content-Type: application/json;char
 echo "Grafana said: $resp" >>$myBase/test.log
 
 ##This will store data into influx.
-#echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
-echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null" >> $myBase/test.log
-echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  2>/dev/null"
+#echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log "
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7  2>/dev/null" >> $myBase/test.log
+echo "$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7  2>/dev/null"
  
-#$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8  1.3.6.1.4.1.4171.40.18 1.3.6.1.4.1.4171.40.19 2>/dev/null > $myBase/backend.log &
-$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 1.3.6.1.4.1.4171.40.8 2>/dev/null > $myBase/backend.log &
+$myBase/backend.test $credential_dev1 $FS 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.2 1.3.6.1.4.1.4171.40.3 1.3.6.1.4.1.4171.40.4 1.3.6.1.4.1.4171.40.5 1.3.6.1.4.1.4171.40.6 1.3.6.1.4.1.4171.40.7 2>/dev/null > $myBase/backend.log &
 myPid=$!
 
 ##Get the current reference counters
