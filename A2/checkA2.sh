@@ -162,9 +162,9 @@ fi
 
 echo " "
 echo "Checking: data rate (high), nasty agent "
-echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data" 
+echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.17 > /tmp/A2/high_data" 
 
-/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.18 > /tmp/A2/high_data
+/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.17 > /tmp/A2/high_data
 
 echo "Got " $(wc -l /tmp/A2/high_data) " samples "
 
