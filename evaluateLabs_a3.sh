@@ -31,7 +31,9 @@ do
     ls $studTmp
 
     ## Remove txt||pdf from filename
+    echo "[EvalLab] Rename"
     rename 's/\.txt$//' $studTmp/*.txt
+    ls $studTmp
     echo "[EvalLab] Executing test" 
     echo "[EvalLab] $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp &"
     $myBasedir/A3/checkA3.sh $myBasedir/A3/checkA3.conf $studTmp 
