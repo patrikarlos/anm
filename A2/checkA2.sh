@@ -11,8 +11,10 @@ refdevice1='18.219.51.6'
 #refdevice1='192.168.185.60'
 #refdevice1='10.1.0.169'
 refdevice2='192.168.184.40'
-credential_dev1="$refdevice1:1612:public"
-credential_dev2="$refdevice2:161:public"
+portrefdev1=1612
+portrefdev2=161
+credential_dev1="$refdevice1:$portrefdev1:public"
+credential_dev2="$refdevice2:$portrefdev2:public"
 
 #git log --pretty=format:'%ci %cn %H' -n 1
 version='2017-11-15 11:38:50 +0100 Patrik Arlos 17bfb90ef03e1c6fca6ef65271b1f6b0482305df'
@@ -103,15 +105,19 @@ echo "Time: $mvalue +-$stdval from $samples samples. "
 #sampleDiff=$((mvalue-Fs)) 
 sampleDiff=$(echo $mvalue - $Fs | bc -l )
 
-if [ "$mvalue" -ne "$Fs" ]; then 
-    echo "Error: Requested $Fs got $mvalue s"
-    if [[ "$sampleDiff" -lt 1 ]]; then
-	echo "Difference is small, $sampleDiff its Ok".
-    else
-	exit 1
-    fi
-else 
-    echo "OK; Sample rate seems reasonable."
+echo "Will compare $mvalue to $Fs . "
+
+relDiff=$(awk -v a=$mvalue -v b=$Fs -v threshold=0.1 'BEGIN { d=((b-sqrt(a^2))/b)*100; if ( d<threshold ) {print "OK", d } else {print "NOT", d }   }')
+
+
+if [[ $relDiff == *"OK"* ]]; then
+    echo "OK; Sample rate seems reasonable, less than 0.1% difference ($mvalue vs $Fs) "
+    echo "$relDiff"
+else
+    echo "Error: Requested $Fs got $mvalue, thats more than 0.1% difference."
+    echo "$relDiff"
+    exit 1
+
 fi
 
 ## Get the rate between samples
@@ -218,7 +224,7 @@ sleep 1
 
 #echo "Checking blob3"; ls -la /tmp/A2/blob
 
-tcpdump -c 10 -ttt -r /tmp/A2/blob.pcap -n ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob
+tcpdump -c 10 -ttt -r /tmp/A2/blob.pcap -n ip dst $refdevice2 and udp and dst port $portrefdev2 > /tmp/A2/blob
 
 printf "Requests sent, logged, validating\n" 
 
@@ -239,7 +245,7 @@ fi
 
 
 printf "Checking that the prober contains ALL OIDS in one request."
-sudo tcpdump -c 1 -ttt -n -i $internetNIC2 ip dst $refdevice2 and udp and dst port 161 > /tmp/A2/blob &
+sudo tcpdump -c 1 -ttt -n -i $internetNIC2 ip dst $refdevice2 and udp and dst port  $portrefdev2 > /tmp/A2/blob &
 echo "tcpdump on"
 sleep 3
 
@@ -273,8 +279,8 @@ echo "Checking SNMP requests, against not so nice device (delay)"
 ## Get snmp requests
 echo "Running "
 echo "Will grab request and response, then filter requests to a specific file"
-echo "tcpdump -c 20 -w tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port 1611 "
-sudo tcpdump -c 20 -w /tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port 1611 &
+echo "tcpdump -c 20 -w tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port $portrefdev1 "
+sudo tcpdump -c 20 -w /tmp/A2/blob_delay_all -n -i $internetNIC1 host $refdevice1 and udp and port $portrefdev1 &
 echo "tcpdump on"
 sleep 3
 
@@ -282,8 +288,8 @@ echo "/tmp/A2/prober $credential_dev1 0.5 10 1.3.6.1.4.1.4171.40.19"
 /tmp/A2/prober $credential_dev1 0.5 10 1.3.6.1.4.1.4171.40.19
 
 echo "Grabbing requests shiping to blob_delay_nsnd, all data in blob_delay_nsnd_all_data"
-echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 udp and dst port 1611 > /tmp/A2/blob_delay_nsnd"  
-sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob_delay_nsnd  
+echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 udp and dst port $portrefdev1 > /tmp/A2/blob_delay_nsnd"  
+sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all ip dst $refdevice1 and udp and dst port $portrefdev1 > /tmp/A2/blob_delay_nsnd  
 echo "sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all > /tmp/A2/blob_delay_nsnd_all_data  "
 sudo tcpdump -ttt -n -r /tmp/A2/blob_delay_all > /tmp/A2/blob_delay_nsnd_all_data  
 
@@ -343,7 +349,7 @@ fi
 echo " "
 echo "Checking SNMP requests, against not so nice device (bad response)"
 ## Get snmp requests
-sudo tcpdump -c 10 -ttt -n -i $internetNIC1 ip dst $refdevice1 and udp and dst port 1611 > /tmp/A2/blob &
+sudo tcpdump -c 10 -ttt -n -i $internetNIC1 ip dst $refdevice1 and udp and dst port $portrefdev1  > /tmp/A2/blob &
 echo "tcpdump on"
 sleep 3
 
