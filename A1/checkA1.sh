@@ -118,12 +118,15 @@ sudo snmpd -f -c /tmp/A1/snmpd.conf -C -a -Lf /tmp/A1/snmpd.log &
 
 
 
+snmpTime=$(snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.50.1)
+myTimeNow=$(($(date +%s%N)/1000))
+
 ##Initial test.
 myTimeRef=$(($(date --date '2018-10-01 00:00:00' +%s%N)/1000))
-myTimeNow=$(($(date +%s%N)/1000))
+
 myTime=$(( $myTimeNow - $myTimeRef )) 
 
-snmpTime=$(snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.50.1)
+
 
 if [ -z "$snmpTime" ]; then
     echo "[SNMPd] No response/or incorrect, ERROR . ";
@@ -132,7 +135,7 @@ if [ -z "$snmpTime" ]; then
     exit 1;
 fi
 
-echo "Got; $snmpTime "
+#echo "Got; $snmpTime "
 
 if [[  $snmpTime == *"No Such Object"* ]]; then
     echo "[SNMPd] Agent does not respond to the time OID (1.3.6.1.4.1.4171.50.1 "
@@ -151,32 +154,30 @@ fi
 
 
 
-diff=$(( $myTime - $snmpTime ))
+diff=$(( $myTimeNow - $snmpTime ))
 
-if [ "$diff" -gt "0" ]; then
+if [ "$diff" -gt "100000" ]; then
     echo "[SNMPd] Positive time difference, i.e the first timestamp was before the second ERROR"
-    echo "        $myTime < $snmpTime  --> $diff"
-#    abortWdem
-#    exit 1
-    echo "Nevermind"
-elif [ "$diff" -lt "-2" ]; then
-    echo "[SNMPd] Negative time difference, beyond 2."
+    echo "        $myTimeNow < $snmpTime  --> $diff"
+    abortWdem
+    exit 1
+elif [ "$diff" -lt "-100000" ]; then
+    echo "[SNMPd] Negative time difference, beyond 1 second error. "
     echo "        The system was too slow to respond"
-    echo "        $myTime < $snmpTime  --> $diff"
-#    abortWdem
-    #    exit 1
-    echo "Nevermind."
+    echo "        $myTimeNow < $snmpTime  --> $diff"
+    abortWdem
+    exit 1
 else 
     echo "[ TEST ] Checked difference between SNMPd and host."
-    echo "         Host time = $myTime, SNMPd time=$snmpTime "
-    echo "         Difference = $diff [s]"
+    echo "         Host time = $myTimeNow, SNMPd time=$snmpTime "
+    echo "         Difference = $diff [us]"
 fi
 
 
 ## Check last id
 lastEntry=$(tail -1 /tmp/A1/counters.conf | awk -F',' '{print $1}')
-lastOid="$((lastEntry + 1))"
-lastOidP="$((lastEntry + 2))"
+lastOid="$((lastEntry ))"
+lastOidP="$((lastEntry + 1))"
 
 respOK=$(snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.40.$lastOid)
 
@@ -208,12 +209,12 @@ echo "[ TEST ] Checking the LAST OID , disjunct and large"
 ##Check rate for last OID
 rm -f /tmp/A1/rateCheck_samples.log /tmp/A1/rates.log
 for k in {1..20}; do 
-    snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.$lastOid | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
+    snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.50.1 1.3.6.1.4.1.4171.40.$lastOid | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
+awk 'NR>1{print ($2-d)/(($1-p)/1e6)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A1/rates.log)
@@ -240,47 +241,44 @@ lastC=$(tail -1 /tmp/A1/counters.conf | awk -F',' '{print $2}')
 pm=$(printf '\xF1')
 echo "         Capacity: $lastC -- $mvalue std.dev= $stdval based on  $samples ($negs negative samples rejected)"
 
-if [ "$lastC" -ne "$mvalue" ]; then 
-    echo "[ TEST ] The calulated rate is not equal to the configured."
+differ=$(( $lastC - $mvalue  ))
+relDiff=$(awk -v a=$differ -v b=$mvalue -v threshold=1 'BEGIN { d=(sqrt(a^2)/b)*100; if ( d<threshold ) {print "OK", d } else {print "NOT", d }   }')
+
+#echo "differ  = $differ "
+#echo "relDiff = $relDiff " 
+
+
+if [[  $relDiff == *"OK"*  ]]; then 
+    echo "[ TEST ] The returned rate matches the configured (average), within 1%, got $relDiff"
+else
+    echo "[ TEST ] The calculated rate is not equal to the configured."
     echo "         Configured $lastC "
     echo "         Returned   $mvalue"
     abortWdem
     exit 1
-else
-    echo "[ TEST ] The returned rate matches the configured (average)"
 fi
-
-if [ "$stdval" -ne "0" ]; then
-    echo "[ TEST ] The standard deviation is not zero, so there is variability"
-    echo "         in the rates, there should not be. "
-    abortWdem
-    exit 1
-else
-    echo "[ TEST ] The rate does not vary (std.dev). "
-fi
-
 
 noIfs=$(cat /tmp/A1/counters.conf | wc -l | awk '{print $1-2}')
 
 #echo "         We have a range 0 to $noIfs "
-chkIF=$(( ( RANDOM % $noIfs )  + 1 ))
+chkIF=$(( ( RANDOM % $noIfs )  ))
 
 ## Get counter rate
 OidC=$(grep "^$chkIF," /tmp/A1/counters.conf | awk -F',' '{print $2}')
 
 
-let chkOID=chkIF+1
-echo "         Randomly picked to check $chkIF with $OidC";
+let chkOID=chkIF
+echo "[ TEST ] Testing a randomly picked interface, $chkIF with capacity of $OidC";
 
 
 rm -f /tmp/A1/rateCheck_samples.log
 for k in {1..20}; do 
-    snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.40.1 1.3.6.1.4.1.4171.40.$chkOID | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
+    snmpget -Onvq -v2c -c public localhost 1.3.6.1.4.1.4171.50.1 1.3.6.1.4.1.4171.40.$chkOID | tr '\n' ' ' | awk '{print $1," ",$2}' >> /tmp/A1/rateCheck_samples.log
     sleep 1
 done
 
 ## Get the rate between samples
-awk 'NR>1{print ($2-d)/($1-p)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
+awk 'NR>1{print ($2-d)/(($1-p)/1e6)} {p=$1;d=$2}' /tmp/A1/rateCheck_samples.log > /tmp/A1/rates.log
 
 ##check if negative rate is found
 negrate=$(grep '-' /tmp/A1/rates.log)
@@ -297,23 +295,22 @@ read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i]
 
 echo "Capacity: $OidC -- $mvalue std.dev= $stdval based on  $samples ($negs negative samples rejected)"
 
-if [ "$OidC" -ne "$mvalue" ]; then 
-    echo "[ TEST ] The calulated rate is not equal to the configured."
+differ=$(( $OidC - $mvalue  ))
+relDiff=$(awk -v a=$differ -v b=$mvalue -v threshold=1 'BEGIN { d=(sqrt(a^2)/b)*100; if ( d<threshold ) {print "OK", d } else {print "NOT", d }   }')
+
+#echo "differ  = $differ "
+#echo "relDiff = $relDiff " 
+
+
+
+if [[  $relDiff == *"OK"*  ]]; then 
+    echo "[ TEST ] The returned rate matches the configured (average), within 1%, got $relDiff"
+else    
+    echo "[ TEST ] The calulated rate is not equal to the configured, got $relDiff."
     echo "         Configured $OidC "
     echo "         Returned   $mvalue"
     abortWdem
     exit 1
-else
-    echo "[ TEST ] The returned rate matches configure (average)"
-fi
-
-if [ "$stdval" -ne "0" ]; then
-    echo "[ TEST ] The standard deviation is not zero, so there is variability"
-    echo "         in the rates, there should not be. "
-    abortWdem
-    exit 1
-else
-    echo "[ TEST ] The rate does not vary (std.dev). "
 fi
 
 
