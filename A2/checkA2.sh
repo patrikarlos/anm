@@ -78,7 +78,7 @@ echo "/tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.$ooid > /tmp/A
 
 /tmp/A2/prober $credential_dev1 $Fs $Ns 1.3.6.1.4.1.4171.40.$ooid > /tmp/A2/data
 
-rateCnt=$(cat /tmp/A2/data | wc -l)
+rateCnt=$(cat /tmp/A2/data | sed '/^\s*$/d' | wc -l)
 sampleCnt="$((rateCnt))"
 
 if [ "$Ns" -ne "$sampleCnt" ]; then 
