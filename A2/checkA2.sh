@@ -194,7 +194,7 @@ linesNotMatching=$(grep -v "$OidC"  /tmp/A2/high_rates.log | wc -l )
 
 echo "Found $linesNotMatching lines not matching the expected value"
 
-if (( "$linesNotMatching" > 0 )) ; then
+if (( "$linesNotMatching" < 2 )) ; then
     echo "Error: Atleast one rate does not match, $linesNotMatching "
     cat /tmp/A2/high_rates.log
     exit 1
