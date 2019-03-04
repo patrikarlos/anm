@@ -48,10 +48,10 @@ printf "\t credref2   $credential_dev2 \n";
 
 
 if [ ! -e /tmp/A2/prober ]; then
-    echo "Error: /tmp/A2/prober does not exist. ";
+    echo "Error: The test folder, /tmp/A2/, does not contain the executable 'prober'. ";
     echo "Folder contains:"
     ls /tmp/A2
-    echo "        Leaving."
+    echo "        No point in continuing, leaving."
     exit 1
 fi
 
