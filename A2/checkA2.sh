@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 ##VARIABLES; must be filled correctly
 
@@ -17,7 +17,7 @@ credential_dev1="$refdevice1:$portrefdev1:public"
 credential_dev2="$refdevice2:$portrefdev2:public"
 
 #git log --pretty=format:'%ci %cn %H' -n 1
-version='2017-11-15 11:38:50 +0100 Patrik Arlos 17bfb90ef03e1c6fca6ef65271b1f6b0482305df'
+version='2019-03-04 08:42:44 +0100 parlos 5be8c80312d166e4e6b7dc703c3e6423f408fd03'
 
 
 
@@ -135,16 +135,20 @@ OidC=$(grep "^$chkIF," /tmp/A2/counters.conf | awk -F',' '{print $2}')
 ## Get statistics
 read mvalue stdval samples negs <<<$(awk '{ for(i=1;i<=NF;i++) if ($i>0) {sum[i] += $i; sumsq[i] += ($i)^2;} else {de++;} } END {for (i=1;i<=NF;i++) { printf "%d %d %d %d\n", sum[i]/(NR-de), sqrt((sumsq[i]-sum[i]^2/(NR-de))/(NR-de)), (NR-de), de} }' /tmp/A2/rates.log )
 
-echo "Rates: $mvalue +-$stdval from $samples"
 
-if [[ "$mvalue" -ne "$OidC" ]]; then 
-    echo "Error: Requested $OidC got $mvalue du/tu"
+rateDiff=$(awk -v a=$mvalue -v b=$OidC -v threshold=1 'BEGIN { d=((a-b)/a)*100; if ( d<threshold ) {print "OK", d } else {print "NOT", d }   }')
+
+echo "Rates: $mvalue +-$stdval from $samples, with $rateDiff ."
+
+if [[ "$rateDiff" == *"OK"* ]]; then 
+    echo "Ok, rate matches ($mvalue vs $OidC)."
+else
+    echo "Error: Requested $OidC got $mvalue du/tu, thats more than 1% difference"
     echo "this is your data."
     cat /tmp/A2/data
     exit 1
-else
-    echo "Ok, rate matches ($mvalue vs $OidC)."
 fi
+
 
 echo " "
 echo "Checking that we can atleast manage 2Hz"
@@ -190,7 +194,7 @@ if [[ "$negrate" ]]; then
 fi
 
 
-linesNotMatching=$(grep -v "$OidC"  /tmp/A2/high_rates.log | wc -l )
+linesNotMatching=$(awk -v a=$OidC '{print $1-a}' /tmp/A2/high_rates.log | grep -v -e '^0' | wc -l )
 
 echo "Found $linesNotMatching lines not matching the expected value"
 
