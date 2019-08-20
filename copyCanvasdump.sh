@@ -8,10 +8,13 @@ echo "dst $dst"
 
 for item in $src/*;
 do
-    IFS=_ read name number1 number2 filename <<< "$item";
+    IFS=_ read name number1 number2 filenameBase <<< "$item";
     name=$(basename $name);
+    filename=$(echo $filenameBase | sed 's/-[0-9]//g' )
+
+    echo "Working on $item "
     echo "Student: $name"
-    echo "File: $filename"
+    echo "File: $filename  ($filenameBase) "
 
     if [[ ! -e "$dst/$name" ]];then
 	mkdir -p "$dst/$name"
@@ -21,6 +24,8 @@ do
 
     echo "Copying $item -> $dst/$name/$filename"
     cp $item $dst/$name/$filename
+    echo "-------------"
+    echo " "
     
        
 done
