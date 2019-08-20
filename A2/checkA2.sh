@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 ##VARIABLES; must be filled correctly
 
@@ -62,6 +62,18 @@ if [ ! -x /tmp/A2/prober ]; then
     echo "        Leaving."
     exit 1
 fi
+
+FileFirstLine=$(head -1 /tmp/A2/prober)
+SHEbang="${FileFirstLine:0:3}";
+
+if [[ "$SHEbang" == "#!/" ]]; then
+    echo "Shebang is present";
+else
+    echo "Error: Missing shebang."
+    echo "Shebang notation is required as to know what engine to use for processing"
+    exit 1
+fi
+
 
 ##prober <Agent IP:port:community> <sample frequency> <samples> <OID1> <OID2> …….. <OIDn>
 
